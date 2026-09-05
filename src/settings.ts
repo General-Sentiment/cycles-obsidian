@@ -38,6 +38,19 @@ export class CyclesSettingTab extends PluginSettingTab {
           })
       );
 
+    new Setting(this.containerEl)
+      .setName("Show platform icons")
+      .setDesc("Show platform logos such as YouTube and Instagram before note titles.")
+      .addToggle((toggle) =>
+        toggle
+          .setValue(this.plugin.settings.showPlatformIcons)
+          .onChange(async (value) => {
+            this.plugin.settings.showPlatformIcons = value;
+            await this.plugin.saveSettings();
+            await this.plugin.refreshViews();
+          })
+      );
+
     this.containerEl.createEl("h3", { text: "Media" });
 
     new Setting(this.containerEl)

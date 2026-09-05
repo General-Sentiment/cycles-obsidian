@@ -12,6 +12,7 @@ const DEFAULT_SETTINGS: CyclesSettings = {
   mediaFolder: DEFAULT_MEDIA_FOLDER,
   showCycleDuration: true,
   showLastVisited: true,
+  showPlatformIcons: true,
   captureMissingImages: true,
   legacyVisitMigrationCompleted: false
 };
@@ -225,6 +226,10 @@ export default class CyclesPlugin extends Plugin {
         typeof loaded?.showLastVisited === "boolean"
           ? loaded.showLastVisited
           : DEFAULT_SETTINGS.showLastVisited,
+      showPlatformIcons:
+        typeof loaded?.showPlatformIcons === "boolean"
+          ? loaded.showPlatformIcons
+          : DEFAULT_SETTINGS.showPlatformIcons,
       captureMissingImages:
         typeof loaded?.captureMissingImages === "boolean"
           ? loaded.captureMissingImages

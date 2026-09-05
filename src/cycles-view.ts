@@ -168,7 +168,7 @@ export class CyclesView extends ItemView {
         attr: { "aria-label": `Open ${note.file.basename}` }
       });
       const title = noteButton.createDiv({ cls: "cycles-note-title" });
-      const platform = getPlatformIcon(note.url);
+      const platform = this.plugin.settings.showPlatformIcons ? getPlatformIcon(note.url) : null;
       if (platform) {
         const icon = title.createSpan({
           cls: "cycles-platform-icon",

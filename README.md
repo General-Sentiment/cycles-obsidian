@@ -17,7 +17,7 @@ Notes with a valid cycle and no `visited` date are due immediately. Opening a no
 
 When upgrading from the shard-based version, Cycles copies existing visit dates from `cycle-data/notes/` into their notes once. It leaves the legacy folder untouched as a backup but no longer reads or writes it afterward.
 
-The plugin settings independently control whether each row shows its cycle duration and last-visited date.
+The plugin settings independently control whether each row shows its cycle duration, last-visited date, and platform icon. **Show platform icons** is enabled by default and updates the sidebar immediately when toggled.
 
 The sidebar header can switch between due notes and all notes with a valid `cycle` property. In the all-notes view, due notes appear first and upcoming notes follow in next-due order.
 

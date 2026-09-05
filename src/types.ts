@@ -17,6 +17,7 @@ export interface CyclesSettings {
   mediaFolder: string;
   showCycleDuration: boolean;
   showLastVisited: boolean;
+  showPlatformIcons: boolean;
   captureMissingImages: boolean;
   legacyVisitMigrationCompleted: boolean;
 }
