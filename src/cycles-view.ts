@@ -1,0 +1,256 @@
+import { ItemView, Menu, Notice, setIcon, type MenuItem, type TFile, type WorkspaceLeaf } from "obsidian";
+import { formatLastVisited, type ParsedCycle } from "./cycle";
+import type CyclesPlugin from "./main";
+
+export const CYCLES_VIEW_TYPE = "cycles-due-notes";
+
+const REST_EXTENSIONS: ParsedCycle[] = [
+  { amount: 1, unit: "week", source: "1w", label: "1 week" },
+  { amount: 2, unit: "week", source: "2w", label: "2 weeks" },
+  { amount: 1, unit: "month", source: "1m", label: "1 month" },
+  { amount: 2, unit: "month", source: "2m", label: "2 months" },
+  { amount: 3, unit: "month", source: "3m", label: "3 months" }
+];
+
+export class CyclesView extends ItemView {
+  private visitedPaths = new Set<string>();
+  private showAllNotes = false;
+
+  constructor(
+    leaf: WorkspaceLeaf,
+    private readonly plugin: CyclesPlugin
+  ) {
+    super(leaf);
+  }
+
+  getViewType(): string {
+    return CYCLES_VIEW_TYPE;
+  }
+
+  getDisplayText(): string {
+    return "Cycles";
+  }
+
+  getIcon(): string {
+    return "refresh-cw";
+  }
+
+  async onOpen(): Promise<void> {
+    await this.refreshFromState();
+  }
+
+  async refreshFromState(): Promise<void> {
+    this.visitedPaths.clear();
+    await this.render();
+    this.plugin.captureMissingImages();
+  }
+
+  async render(): Promise<void> {
+    const container = this.contentEl;
+    container.empty();
+    container.addClass("cycles-view");
+
+    const header = container.createDiv({ cls: "cycles-header" });
+    header.createEl("h2", { text: this.showAllNotes ? "All notes" : "Due notes" });
+    const headerActions = header.createDiv({ cls: "cycles-header-actions" });
+    const visibilityButton = headerActions.createEl("button", {
+      cls: "clickable-icon cycles-header-button cycles-visibility-toggle",
+      attr: {
+        "aria-label": this.showAllNotes
+          ? "Show due notes only"
+          : "Show all cycling notes",
+        "aria-pressed": String(this.showAllNotes)
+      }
+    });
+    setIcon(visibilityButton, this.showAllNotes ? "clock-3" : "list");
+    visibilityButton.addEventListener("click", () => {
+      this.showAllNotes = !this.showAllNotes;
+      void this.render();
+    });
+
+    const refreshButton = headerActions.createEl("button", {
+      cls: "clickable-icon cycles-header-button cycles-refresh",
+      attr: { "aria-label": "Refresh Cycles notes" }
+    });
+    setIcon(refreshButton, "refresh-cw");
+    refreshButton.addEventListener("click", () => void this.refreshFromState());
+
+    const notes = this.showAllNotes
+      ? this.getAllNotesForSidebar()
+      : this.plugin.cycleIndex.getDueNotes();
+    if (notes.length === 0) {
+      const empty = container.createDiv({ cls: "cycles-empty" });
+      empty.createEl("p", {
+        text: this.showAllNotes
+          ? "No cycling notes found."
+          : "Nothing is due right now."
+      });
+      empty.createEl("small", {
+        text: "Add a cycle property such as 7d or 2w to resurface a note."
+      });
+      return;
+    }
+
+    container.createEl("p", {
+      cls: "cycles-summary",
+      text: this.showAllNotes
+        ? `${notes.length} cycling ${notes.length === 1 ? "note" : "notes"}`
+        : `${notes.length} ${notes.length === 1 ? "note" : "notes"} ready to revisit`
+    });
+
+    const list = container.createDiv({ cls: "cycles-list" });
+    for (const note of notes) {
+      const item = list.createDiv({ cls: "cycles-item" });
+      if (this.visitedPaths.has(note.file.path)) item.addClass("is-visited");
+      item.addEventListener("contextmenu", (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        const menu = new Menu();
+        if (this.visitedPaths.has(note.file.path)) {
+          menu.addItem((menuItem) => {
+            menuItem
+              .setTitle("Reset visit")
+              .setIcon("rotate-ccw")
+              .onClick(() => void this.resetVisit(note.file.path));
+          });
+          menu.addSeparator();
+        }
+        menu.addItem((menuItem) => {
+          menuItem.setTitle("Extend rest").setIcon("clock-plus");
+          // Obsidian exposes this at runtime but omits it from its public types.
+          const submenu = (menuItem as MenuItem & { setSubmenu(): Menu }).setSubmenu();
+          for (const extension of REST_EXTENSIONS) {
+            submenu.addItem((choice) => {
+              choice.setTitle(`Add ${extension.label}`).onClick(() => {
+                void this.extendRest(note.file.path, extension);
+              });
+            });
+          }
+        });
+        menu.addSeparator();
+        menu.addItem((menuItem) => {
+          menuItem
+            .setTitle("Delete")
+            .setIcon("trash-2")
+            .onClick(() => void this.deleteNote(note.file));
+        });
+        menu.showAtMouseEvent(event);
+      });
+      {
+        const thumbnail = item.createEl("button", {
+          cls: "cycles-thumbnail",
+          attr: { "aria-label": `Open ${note.file.basename}` }
+        });
+        if (note.imageSrc) {
+          thumbnail.createEl("img", {
+            attr: {
+              src: note.imageSrc,
+              alt: "",
+              loading: "lazy"
+            }
+          });
+        } else {
+          thumbnail.addClass("is-placeholder");
+          setIcon(thumbnail, note.placeholderIcon);
+        }
+        thumbnail.addEventListener("click", () => {
+          void this.markVisited(note.file.path, item);
+          void this.app.workspace.getLeaf(false).openFile(note.file);
+        });
+      }
+      const noteButton = item.createEl("button", {
+        cls: "cycles-note-button",
+        attr: { "aria-label": `Open ${note.file.basename}` }
+      });
+      noteButton.createDiv({ cls: "cycles-note-title", text: note.file.basename });
+      if (
+        this.plugin.settings.showCycleDuration ||
+        this.plugin.settings.showLastVisited
+      ) {
+        const metadata = noteButton.createDiv({ cls: "cycles-note-meta" });
+        if (this.plugin.settings.showCycleDuration) {
+          metadata.createSpan({ text: `Every ${note.cycle.label}` });
+        }
+        if (this.plugin.settings.showLastVisited) {
+          metadata.createSpan({
+            text: formatLastVisited(note.lastVisitedAt)
+          });
+        }
+      }
+      noteButton.addEventListener("click", () => {
+        void this.markVisited(note.file.path, item);
+        void this.app.workspace.getLeaf(false).openFile(note.file);
+      });
+
+      if (note.url) {
+        const actions = item.createDiv({ cls: "cycles-actions" });
+        actions.createEl("a", {
+          cls: "cycles-open-button",
+          text: "Visit",
+          href: note.url,
+          attr: {
+            target: "_blank",
+            rel: "noopener noreferrer",
+            "aria-label": `Visit ${note.file.basename} URL`
+          }
+        }).addEventListener("click", () => {
+          void this.markVisited(note.file.path, item);
+        });
+      }
+    }
+  }
+
+  private getAllNotesForSidebar() {
+    return this.plugin.cycleIndex.getAllCycleNotes().sort((a, b) => {
+      if (a.due !== b.due) return a.due ? -1 : 1;
+      if (!a.dueAt && b.dueAt) return -1;
+      if (a.dueAt && !b.dueAt) return 1;
+      const dueDifference =
+        (a.dueAt?.getTime() ?? 0) - (b.dueAt?.getTime() ?? 0);
+      return dueDifference || a.file.basename.localeCompare(b.file.basename);
+    });
+  }
+
+  private async markVisited(notePath: string, item: HTMLElement): Promise<void> {
+    if (this.visitedPaths.has(notePath)) return;
+
+    this.visitedPaths.add(notePath);
+    item.addClass("is-visited");
+    try {
+      await this.plugin.recordVisit(notePath);
+    } catch (error) {
+      this.visitedPaths.delete(notePath);
+      item.removeClass("is-visited");
+      new Notice(error instanceof Error ? error.message : "Could not record visit.");
+    }
+  }
+
+  private async extendRest(notePath: string, extension: ParsedCycle): Promise<void> {
+    try {
+      await this.plugin.extendRest(notePath, extension);
+    } catch (error) {
+      new Notice(error instanceof Error ? error.message : "Could not extend rest.");
+    }
+  }
+
+  private async deleteNote(file: TFile): Promise<void> {
+    try {
+      const deleted = await this.app.fileManager.promptForDeletion(file);
+      if (!deleted) return;
+      this.visitedPaths.delete(file.path);
+      await this.render();
+    } catch (error) {
+      new Notice(error instanceof Error ? error.message : "Could not delete note.");
+    }
+  }
+
+  private async resetVisit(notePath: string): Promise<void> {
+    try {
+      await this.plugin.resetVisit(notePath);
+      this.visitedPaths.delete(notePath);
+      await this.render();
+    } catch (error) {
+      new Notice(error instanceof Error ? error.message : "Could not reset visit.");
+    }
+  }
+}
