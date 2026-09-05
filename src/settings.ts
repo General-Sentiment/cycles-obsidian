@@ -40,7 +40,7 @@ export class CyclesSettingTab extends PluginSettingTab {
 
     new Setting(this.containerEl)
       .setName("Show platform icons")
-      .setDesc("Show platform logos such as YouTube and Instagram before website domains.")
+      .setDesc("Show a platform, link, or note icon in the top-right corner of each row.")
       .addToggle((toggle) =>
         toggle
           .setValue(this.plugin.settings.showPlatformIcons)

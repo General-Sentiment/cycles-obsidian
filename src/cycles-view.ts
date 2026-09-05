@@ -184,6 +184,25 @@ export class CyclesView extends ItemView {
       const noteContent = item.createDiv({ cls: "cycles-note-content" });
       const title = noteContent.createDiv({ cls: "cycles-note-title" });
       title.createSpan({ cls: "cycles-note-title-text", text: note.file.basename });
+      if (this.plugin.settings.showPlatformIcons) {
+        const platform = getPlatformIcon(note.url);
+        const icon = item.createSpan({
+          cls: "cycles-platform-icon",
+          attr: { "aria-hidden": "true", title: platform?.title ?? (note.url ? "Website" : "Note") }
+        });
+        if (platform) {
+          const svg = icon.ownerDocument.createElementNS("http://www.w3.org/2000/svg", "svg");
+          svg.setAttribute("viewBox", platform.viewBox ?? "0 0 24 24");
+          svg.setAttribute("fill", "currentColor");
+          svg.setAttribute("focusable", "false");
+          const path = icon.ownerDocument.createElementNS("http://www.w3.org/2000/svg", "path");
+          path.setAttribute("d", platform.path);
+          svg.appendChild(path);
+          icon.appendChild(svg);
+        } else {
+          setIcon(icon, note.url ? "link" : "file-text");
+        }
+      }
       const domain = this.plugin.settings.showWebsiteDomain
         ? formatWebsiteDomain(note.url) ?? "Note"
         : null;
@@ -191,25 +210,6 @@ export class CyclesView extends ItemView {
         const metadata = noteContent.createDiv({ cls: "cycles-note-meta" });
         if (domain) {
           const website = metadata.createDiv({ cls: "cycles-note-domain" });
-          if (this.plugin.settings.showPlatformIcons) {
-            const platform = getPlatformIcon(note.url);
-            const icon = website.createSpan({
-              cls: "cycles-platform-icon",
-              attr: { "aria-hidden": "true", title: platform?.title ?? (note.url ? "Website" : "Note") }
-            });
-            if (platform) {
-              const svg = icon.ownerDocument.createElementNS("http://www.w3.org/2000/svg", "svg");
-              svg.setAttribute("viewBox", platform.viewBox ?? "0 0 24 24");
-              svg.setAttribute("fill", "currentColor");
-              svg.setAttribute("focusable", "false");
-              const path = icon.ownerDocument.createElementNS("http://www.w3.org/2000/svg", "path");
-              path.setAttribute("d", platform.path);
-              svg.appendChild(path);
-              icon.appendChild(svg);
-            } else {
-              setIcon(icon, note.url ? "link" : "file-text");
-            }
-          }
           website.createSpan({ cls: "cycles-note-domain-text", text: domain });
         }
         if (this.plugin.settings.showCycleDuration) {

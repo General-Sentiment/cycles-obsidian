@@ -21,7 +21,7 @@ The plugin settings independently control whether each row shows its cycle durat
 
 The sidebar header can switch between due notes and all notes with a valid `cycle` property. In the all-notes view, due notes appear first and upcoming notes follow in next-due order.
 
-URLs display a sanitized website domain without the protocol, `www.`, path, or trailing slash. A small platform logo (or a link icon for other websites) precedes the domain in the same muted secondary text color. Supported platforms include Are.na, YouTube, Instagram, X/Twitter, Threads, Spotify, Bandcamp, SoundCloud, TikTok, Bluesky, Substack, Vimeo, Reddit, GitHub, Facebook, Twitch, and Pinterest. Logos from Simple Icons and the Are.na website are bundled locally; icons can be hidden with **Show platform icons**.
+URLs display a sanitized website domain without the protocol, `www.`, path, or trailing slash. A platform logo (or link or note icon) appears in the top-right corner, matching the title’s size and using muted secondary text color. Supported platforms include Are.na, YouTube, Instagram, X/Twitter, Threads, Spotify, Bandcamp, SoundCloud, TikTok, Bluesky, Substack, Vimeo, Reddit, GitHub, Facebook, Twitch, and Pinterest. Logos from Simple Icons and the Are.na website are bundled locally; icons can be hidden with **Show platform icons**.
 
 Right-click any row and choose **Open note** to open the underlying note directly. Choose **Delete** to use Obsidian's standard note deletion flow, including its configured confirmation, trash location, and unlinked attachment handling. Canceling the confirmation keeps the note. Rows visited during the current sidebar session also offer **Reset visit**.
 

@@ -129,16 +129,18 @@
 }
 
 .cycles-platform-icon {
-  color: inherit;
+  align-self: flex-start;
+  color: var(--text-muted);
   display: inline-flex;
-  flex: 0 0 12px;
-  height: 12px;
+  flex: 0 0 1em;
+  height: 1em;
+  width: 1em;
 }
 
 .cycles-platform-icon svg {
   color: inherit;
-  height: 12px;
-  width: 12px;
+  height: 1em;
+  width: 1em;
 }
 
 .cycles-note-meta {
