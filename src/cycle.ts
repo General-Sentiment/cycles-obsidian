@@ -164,6 +164,12 @@ export function extendCycleValue(cycle: ParsedCycle, extension: ParsedCycle): st
   if (!Number.isSafeInteger(months) || !Number.isSafeInteger(days)) {
     throw new Error("Cycle duration is too large.");
   }
+  // Keep extended cycles compact: four accumulated weeks become a calendar month.
+  months += Math.floor(days / 28);
+  days %= 28;
+  if (!Number.isSafeInteger(months)) {
+    throw new Error("Cycle duration is too large.");
+  }
   const label = (amount: number, unit: CycleUnit) => `${amount} ${unit}${amount === 1 ? "" : "s"}`;
   const parts: string[] = [];
   if (months) parts.push(months % 12 === 0 ? label(months / 12, "year") : label(months, "month"));

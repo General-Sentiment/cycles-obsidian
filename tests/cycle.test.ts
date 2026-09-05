@@ -47,7 +47,13 @@ describe("cycle scheduling", () => {
     ["1 month", 3, "month", "4 months"],
     ["1 month", 1, "week", "1 month 1 week"],
     ["1 month", 2, "week", "1 month 2 weeks"],
-    ["6 weeks", 1, "week", "7 weeks"],
+    ["6 weeks", 1, "week", "1 month 3 weeks"],
+    ["2 months 2 weeks", 2, "week", "3 months"],
+    ["2 months 3 weeks", 2, "week", "3 months 1 week"],
+    ["2 weeks", 2, "week", "1 month"],
+    ["2 months 4 weeks", 1, "week", "3 months 1 week"],
+    ["11 months 2 weeks", 2, "week", "1 year"],
+    ["22 days", 1, "week", "1 month 1 day"],
     ["1 year", 1, "month", "13 months"],
     ["1 month 1 week", 1, "week", "1 month 2 weeks"],
     ["10 days", 1, "week", "17 days"]
@@ -68,6 +74,17 @@ describe("cycle scheduling", () => {
       expect(calculateNextDue("2026-01-31", parsed.cycle)).toEqual(new Date(2026, 2, 7));
       expect(calculateNextDue(undefined, parsed.cycle)).toBeNull();
     }
+  });
+
+  it("schedules the simplified result as calendar months", () => {
+    const current = parseCycle("2 months 2 weeks");
+    if (current.kind !== "cycle") throw new Error("Invalid test cycle");
+    const extended = parseCycle(extendCycleValue(current.cycle, cycle(2, "week")));
+    if (extended.kind !== "cycle") throw new Error("Invalid extended cycle");
+    expect(calculateNextDue("2026-09-04", extended.cycle)).toEqual(new Date(2026, 11, 4));
+    const unchanged = parseCycle("4 weeks");
+    if (unchanged.kind !== "cycle") throw new Error("Invalid test cycle");
+    expect(calculateNextDue("2026-09-04", unchanged.cycle)).toEqual(new Date(2026, 9, 2));
   });
 
   it.each(["1 month 0 weeks", "1 month + off", "1 month -2 weeks", "1m +"])(
