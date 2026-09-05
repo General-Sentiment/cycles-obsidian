@@ -1,6 +1,7 @@
 import { ItemView, Menu, Notice, setIcon, type MenuItem, type TFile, type WorkspaceLeaf } from "obsidian";
 import { formatLastVisited, type ParsedCycle } from "./cycle";
 import type CyclesPlugin from "./main";
+import { getPlatformIcon } from "./platform-icon";
 
 export const CYCLES_VIEW_TYPE = "cycles-due-notes";
 
@@ -166,7 +167,23 @@ export class CyclesView extends ItemView {
         cls: "cycles-note-button",
         attr: { "aria-label": `Open ${note.file.basename}` }
       });
-      noteButton.createDiv({ cls: "cycles-note-title", text: note.file.basename });
+      const title = noteButton.createDiv({ cls: "cycles-note-title" });
+      const platform = getPlatformIcon(note.url);
+      if (platform) {
+        const icon = title.createSpan({
+          cls: "cycles-platform-icon",
+          attr: { "aria-hidden": "true", title: platform.title }
+        });
+        const svg = icon.ownerDocument.createElementNS("http://www.w3.org/2000/svg", "svg");
+        svg.setAttribute("viewBox", "0 0 24 24");
+        svg.setAttribute("fill", "currentColor");
+        svg.setAttribute("focusable", "false");
+        const path = icon.ownerDocument.createElementNS("http://www.w3.org/2000/svg", "path");
+        path.setAttribute("d", platform.path);
+        svg.appendChild(path);
+        icon.appendChild(svg);
+      }
+      title.createSpan({ cls: "cycles-note-title-text", text: note.file.basename });
       if (
         this.plugin.settings.showCycleDuration ||
         this.plugin.settings.showLastVisited

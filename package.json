@@ -13,6 +13,7 @@
     "@types/node": "^24.1.0",
     "esbuild": "^0.28.1",
     "obsidian": "^1.13.1",
+    "simple-icons": "^16.29.0",
     "typescript": "^7.0.2",
     "vitest": "^4.1.10"
   }

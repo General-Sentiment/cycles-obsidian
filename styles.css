@@ -119,10 +119,31 @@
 }
 
 .cycles-note-title {
+  align-items: center;
+  display: flex;
+  gap: 6px;
   font-weight: var(--font-semibold);
+  min-width: 0;
+}
+
+.cycles-note-title-text {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.cycles-platform-icon {
+  color: inherit;
+  display: inline-flex;
+  flex: 0 0 14px;
+  height: 14px;
+}
+
+.cycles-platform-icon svg {
+  color: inherit;
+  fill: currentColor;
+  height: 14px;
+  width: 14px;
 }
 
 .cycles-note-meta {
