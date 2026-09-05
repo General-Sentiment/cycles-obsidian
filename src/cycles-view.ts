@@ -14,6 +14,8 @@ const CYCLE_EXTENSIONS: ParsedCycle[] = [
 
 export class CyclesView extends ItemView {
   private visitedPaths = new Set<string>();
+  private extendedFiles = new Set<TFile>();
+  private displayedFiles: TFile[] = [];
   private showAllNotes = false;
 
   constructor(
@@ -41,6 +43,8 @@ export class CyclesView extends ItemView {
 
   async refreshFromState(): Promise<void> {
     this.visitedPaths.clear();
+    this.extendedFiles.clear();
+    this.displayedFiles = [];
     await this.render();
     this.plugin.captureMissingImages();
   }
@@ -77,7 +81,8 @@ export class CyclesView extends ItemView {
 
     const notes = this.showAllNotes
       ? this.getAllNotesForSidebar()
-      : this.plugin.cycleIndex.getDueNotes();
+      : this.getDueNotesForSidebar();
+    this.displayedFiles = notes.map((note) => note.file);
     if (notes.length === 0) {
       const empty = container.createDiv({ cls: "cycles-empty" });
       empty.createEl("p", {
@@ -122,7 +127,7 @@ export class CyclesView extends ItemView {
           for (const extension of CYCLE_EXTENSIONS) {
             submenu.addItem((choice) => {
               choice.setTitle(`Add ${extension.label}`).onClick(() => {
-                void this.extendCycle(note.file.path, extension);
+                void this.extendCycle(note.file, extension);
               });
             });
           }
@@ -200,6 +205,19 @@ export class CyclesView extends ItemView {
     }
   }
 
+  private getDueNotesForSidebar() {
+    const notes = this.getAllNotesForSidebar().filter((note) =>
+      note.due || this.visitedPaths.has(note.file.path) || this.extendedFiles.has(note.file)
+    );
+    if (this.extendedFiles.size > 0) {
+      const positions = new Map(this.displayedFiles.map((file, index) => [file, index]));
+      notes.sort((a, b) =>
+        (positions.get(a.file) ?? Infinity) - (positions.get(b.file) ?? Infinity)
+      );
+    }
+    return notes;
+  }
+
   private getAllNotesForSidebar() {
     return this.plugin.cycleIndex.getAllCycleNotes().sort((a, b) => {
       if (a.due !== b.due) return a.due ? -1 : 1;
@@ -225,10 +243,13 @@ export class CyclesView extends ItemView {
     }
   }
 
-  private async extendCycle(notePath: string, extension: ParsedCycle): Promise<void> {
+  private async extendCycle(file: TFile, extension: ParsedCycle): Promise<void> {
+    const alreadyExtended = this.extendedFiles.has(file);
+    this.extendedFiles.add(file);
     try {
-      await this.plugin.extendCycle(notePath, extension);
+      await this.plugin.extendCycle(file.path, extension);
     } catch (error) {
+      if (!alreadyExtended) this.extendedFiles.delete(file);
       new Notice(error instanceof Error ? error.message : "Could not extend cycle.");
     }
   }
@@ -238,6 +259,7 @@ export class CyclesView extends ItemView {
       const deleted = await this.app.fileManager.promptForDeletion(file);
       if (!deleted) return;
       this.visitedPaths.delete(file.path);
+      this.extendedFiles.delete(file);
       await this.render();
     } catch (error) {
       new Notice(error instanceof Error ? error.message : "Could not delete note.");
