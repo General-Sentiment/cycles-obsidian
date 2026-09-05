@@ -1,8 +1,8 @@
-import { Modal, Notice, Setting } from "obsidian";
+import { Modal, Notice, Setting, setIcon } from "obsidian";
 import type CyclesPlugin from "./main";
 import { addCycle, parseCycle } from "./cycle";
 import { fetchLinkMetadata, type LinkMetadata } from "./link-metadata";
-import { parseHttpUrl } from "./url";
+import { parseHttpUrl, formatWebsiteDomain } from "./url";
 import type { PreparedPreview } from "./screenshot-service";
 
 export class AddCycleUrlModal extends Modal {
@@ -15,7 +15,8 @@ export class AddCycleUrlModal extends Modal {
   }
 
   onOpen(): void {
-    this.setTitle("Add Cycle Note");
+    this.modalEl.addClass("cycles-add-modal");
+    this.setTitle("Add cycle note");
     let value = "";
     const error = this.contentEl.createDiv({ cls: "cycles-form-error", attr: { role: "alert" } });
     const urlSetting = new Setting(this.contentEl).setName("URL").setDesc("Paste the link you want to revisit.");
@@ -42,7 +43,7 @@ export class AddCycleUrlModal extends Modal {
       this.close();
       new ConfirmCycleNoteModal(this.plugin, metadata).open();
     };
-    new Setting(this.contentEl).addButton((cancel) => cancel.setButtonText("Cancel").onClick(() => this.close()))
+    new Setting(this.contentEl).setClass("cycles-add-footer").addButton((cancel) => cancel.setButtonText("Cancel").onClick(() => this.close()))
       .addButton((next) => { button = next; next.setButtonText("Fetch details").setCta().onClick(() => void fetch()); });
     input.focus();
   }
@@ -61,47 +62,62 @@ export class ConfirmCycleNoteModal extends Modal {
   }
 
   onOpen(): void {
-    this.setTitle("Confirm cycle note");
+    this.modalEl.addClass("cycles-add-modal");
+    this.setTitle("New cycle note");
     const { contentEl, metadata } = this;
     let title = metadata.title;
     let description = metadata.description;
     let duration = "2 weeks";
-    contentEl.createEl("p", { text: metadata.url, cls: "cycles-add-url" });
+    contentEl.createEl("p", { text: "Save this link and choose when to revisit it.", cls: "cycles-add-intro" });
+    const source = contentEl.createDiv({ cls: "cycles-add-source" });
+    const previewContainer = source.createDiv({ cls: "cycles-add-preview" });
+    setIcon(previewContainer, "image");
+    const sourceText = source.createDiv({ cls: "cycles-add-source-text" });
+    sourceText.createDiv({ text: formatWebsiteDomain(metadata.url) ?? metadata.url, cls: "cycles-add-source-name" });
+    sourceText.createDiv({ text: metadata.url, cls: "cycles-add-url", attr: { title: metadata.url } });
+    const previewStatus = sourceText.createDiv({ text: "Preparing preview…", cls: "cycles-add-status", attr: { "aria-live": "polite" } });
     if (metadata.warning) contentEl.createEl("p", { text: metadata.warning, cls: "cycles-add-status" });
-    const previewContainer = contentEl.createDiv({ cls: "cycles-add-preview" });
-    const previewStatus = previewContainer.createEl("p", { text: "Fetching preview…", cls: "cycles-add-status", attr: { "aria-live": "polite" } });
     const preview: Promise<PreparedPreview | null> = this.plugin.screenshotService.preparePreview(metadata.url, metadata.imageUrl)
       .then((result) => {
         if (this.closed) return null;
         this.previewUrl = URL.createObjectURL(new Blob([result.data], { type: "image/jpeg" }));
-        previewStatus.remove();
+        previewStatus.setText("Preview ready");
+        previewContainer.empty();
         previewContainer.createEl("img", { attr: { src: this.previewUrl, alt: "Website preview" } });
         return result;
       }).catch(() => {
-        if (!this.closed) previewStatus.setText("Preview unavailable. You can still create the note.");
+        if (!this.closed) previewStatus.setText("No preview available");
         return null;
       });
     new Setting(contentEl).setName("Note title").addText((text) => text.setValue(title).onChange((value) => { title = value; }));
-    new Setting(contentEl).setName("Description").addTextArea((text) => text.setValue(description).onChange((value) => { description = value; }));
+    new Setting(contentEl).setName("Description").setClass("cycles-add-description").addTextArea((text) => text.setPlaceholder("Add a short description (optional)").setValue(description).onChange((value) => { description = value; }));
     let cycleInput!: import("obsidian").TextComponent;
-    new Setting(contentEl).setName("Cycle period").setDesc("For example: 2 weeks, 1 month, or 1 month 2 weeks.")
+    const schedule = contentEl.createDiv({ cls: "cycles-add-schedule" });
+    new Setting(schedule).setName("Revisit every").setDesc("Use weeks, months, or a mix — like 1 month 2 weeks.")
       .addText((text) => { cycleInput = text; text.setValue(duration).setPlaceholder("2 weeks").onChange((value) => { duration = value; updateDue(); }); });
-    const examples = contentEl.createDiv({ cls: "cycles-cycle-examples" });
+    const examples = schedule.createDiv({ cls: "cycles-cycle-examples" });
+    const presets: HTMLButtonElement[] = [];
     for (const example of ["1 week", "2 weeks", "1 month", "3 months"]) {
-      examples.createEl("button", { text: example, attr: { type: "button" } }).addEventListener("click", () => {
+      const preset = examples.createEl("button", { text: example, attr: { type: "button", "aria-pressed": String(example === duration) } });
+      presets.push(preset);
+      preset.addEventListener("click", () => {
         duration = example; cycleInput.setValue(example); updateDue();
       });
     }
-    const due = contentEl.createEl("p", { cls: "cycles-add-status", attr: { "aria-live": "polite" } });
+    const due = schedule.createEl("p", { cls: "cycles-add-due", attr: { "aria-live": "polite" } });
     const updateDue = () => {
       const cycle = parseCycle(duration);
+      for (const preset of presets) {
+        preset.setAttribute("aria-pressed", String(cycle.kind === "cycle" && cycle.cycle.label === preset.textContent));
+      }
+      due.toggleClass("is-invalid", cycle.kind !== "cycle");
       due.setText(cycle.kind === "cycle"
-        ? `Starts today. Next visit: ${addCycle(new Date(), cycle.cycle).toLocaleDateString(undefined, { dateStyle: "medium" })}.`
+        ? `Next visit · ${addCycle(new Date(), cycle.cycle).toLocaleDateString(undefined, { dateStyle: "medium" })}`
         : "Enter a duration such as 2 weeks or 1 month.");
     };
     updateDue();
     const error = contentEl.createDiv({ cls: "cycles-form-error", attr: { role: "alert" } });
-    new Setting(contentEl).addButton((cancel) => cancel.setButtonText("Cancel").onClick(() => this.close()))
+    new Setting(contentEl).setClass("cycles-add-footer").addButton((cancel) => cancel.setButtonText("Cancel").onClick(() => this.close()))
       .addButton((save) => save.setButtonText("Create note").setCta().onClick(async () => {
         if (this.saving) return;
         if (!title.trim()) { error.setText("Enter a note title."); return; }
