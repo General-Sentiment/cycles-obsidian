@@ -114,7 +114,7 @@ export class CyclesView extends ItemView {
           : { role: "button", tabindex: "0", "aria-label": `Open ${note.file.basename}` }
       });
       item.addEventListener("click", (event) => {
-        if (event.ctrlKey) {
+        if (event.altKey) {
           event.preventDefault();
           event.stopPropagation();
           void this.markVisited(note.file.path, item);
@@ -135,11 +135,6 @@ export class CyclesView extends ItemView {
       item.addEventListener("contextmenu", (event) => {
         event.preventDefault();
         event.stopPropagation();
-        // macOS sends Control-click as a contextmenu event instead of a click.
-        if (event.ctrlKey) {
-          void this.markVisited(note.file.path, item);
-          return;
-        }
         const menu = new Menu();
         menu.addItem((menuItem) => {
           menuItem.setTitle("Open note").setIcon("file-text").onClick(() => {
