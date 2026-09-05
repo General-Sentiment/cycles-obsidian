@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   addCycle,
   calculateNextDue,
-  extendRestUntil,
+  extendCycleValue,
   formatDueDate,
   formatLastVisited,
   formatVisitedProperty,
@@ -41,35 +41,40 @@ describe("parseCycle", () => {
 });
 
 describe("cycle scheduling", () => {
-  it("extends overdue and never-visited notes from today", () => {
-    const now = new Date(2026, 8, 5, 16);
-    for (const due of [null, new Date(2026, 0, 1)]) {
-      expect(extendRestUntil(due, cycle(1, "week"), now)).toEqual(new Date(2026, 8, 12));
+  it.each([
+    ["1 month", 1, "month", "2 months"],
+    ["1 month", 2, "month", "3 months"],
+    ["1 month", 3, "month", "4 months"],
+    ["1 month", 1, "week", "1 month 1 week"],
+    ["1 month", 2, "week", "1 month 2 weeks"],
+    ["6 weeks", 1, "week", "7 weeks"],
+    ["1 year", 1, "month", "13 months"],
+    ["1 month 1 week", 1, "week", "1 month 2 weeks"],
+    ["10 days", 1, "week", "17 days"]
+  ] as const)("extends %s by %i %s", (value, amount, unit, expected) => {
+    const parsed = parseCycle(value);
+    expect(parsed.kind).toBe("cycle");
+    if (parsed.kind !== "cycle") return;
+    const result = extendCycleValue(parsed.cycle, cycle(amount, unit));
+    expect(result).toBe(expected);
+    expect(parseCycle(result).kind).toBe("cycle");
+  });
+
+  it("schedules mixed cycles with calendar months before weeks", () => {
+    for (const value of ["1 month 1 week", "1w + 1m"]) {
+      const parsed = parseCycle(value);
+      expect(parsed.kind).toBe("cycle");
+      if (parsed.kind !== "cycle") continue;
+      expect(calculateNextDue("2026-01-31", parsed.cycle)).toEqual(new Date(2026, 2, 7));
+      expect(calculateNextDue(undefined, parsed.cycle)).toBeNull();
     }
   });
 
-  it("accumulates rest extensions from a future due date", () => {
-    const now = new Date(2026, 8, 5);
-    const first = extendRestUntil(new Date(2026, 8, 20), cycle(2, "week"), now);
-    expect(first).toEqual(new Date(2026, 9, 4));
-    expect(extendRestUntil(first, cycle(3, "month"), now)).toEqual(new Date(2027, 0, 4));
-  });
-
-  it("clamps calendar-month rest extensions", () => {
-    expect(extendRestUntil(new Date(2026, 0, 31), cycle(1, "month"), new Date(2026, 0, 1)))
-      .toEqual(new Date(2026, 1, 28));
-  });
-
-  it("uses rest_until without shortening the normal cycle", () => {
-    expect(calculateNextDue("2026-09-01", cycle(1, "week"), "2026-09-20"))
-      .toEqual(new Date(2026, 8, 20));
-    for (const restUntil of ["2026-09-02", "invalid", undefined]) {
-      expect(calculateNextDue("2026-09-01", cycle(1, "week"), restUntil))
-        .toEqual(new Date(2026, 8, 8));
+  it.each(["1 month 0 weeks", "1 month + off", "1 month -2 weeks", "1m +"])(
+    "rejects malformed mixed cycle %s", (value) => {
+      expect(parseCycle(value).kind).toBe("invalid");
     }
-    expect(calculateNextDue(undefined, cycle(1, "week"), "2026-09-20"))
-      .toEqual(new Date(2026, 8, 20));
-  });
+  );
 
   it("adds calendar days and returns local midnight", () => {
     const result = addCycle(new Date(2026, 7, 4, 17, 42), cycle(7, "day"));

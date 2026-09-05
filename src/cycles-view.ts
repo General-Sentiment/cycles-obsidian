@@ -4,7 +4,7 @@ import type CyclesPlugin from "./main";
 
 export const CYCLES_VIEW_TYPE = "cycles-due-notes";
 
-const REST_EXTENSIONS: ParsedCycle[] = [
+const CYCLE_EXTENSIONS: ParsedCycle[] = [
   { amount: 1, unit: "week", source: "1w", label: "1 week" },
   { amount: 2, unit: "week", source: "2w", label: "2 weeks" },
   { amount: 1, unit: "month", source: "1m", label: "1 month" },
@@ -116,13 +116,13 @@ export class CyclesView extends ItemView {
           menu.addSeparator();
         }
         menu.addItem((menuItem) => {
-          menuItem.setTitle("Extend rest").setIcon("clock-plus");
+          menuItem.setTitle("Extend cycle").setIcon("clock-plus");
           // Obsidian exposes this at runtime but omits it from its public types.
           const submenu = (menuItem as MenuItem & { setSubmenu(): Menu }).setSubmenu();
-          for (const extension of REST_EXTENSIONS) {
+          for (const extension of CYCLE_EXTENSIONS) {
             submenu.addItem((choice) => {
               choice.setTitle(`Add ${extension.label}`).onClick(() => {
-                void this.extendRest(note.file.path, extension);
+                void this.extendCycle(note.file.path, extension);
               });
             });
           }
@@ -225,11 +225,11 @@ export class CyclesView extends ItemView {
     }
   }
 
-  private async extendRest(notePath: string, extension: ParsedCycle): Promise<void> {
+  private async extendCycle(notePath: string, extension: ParsedCycle): Promise<void> {
     try {
-      await this.plugin.extendRest(notePath, extension);
+      await this.plugin.extendCycle(notePath, extension);
     } catch (error) {
-      new Notice(error instanceof Error ? error.message : "Could not extend rest.");
+      new Notice(error instanceof Error ? error.message : "Could not extend cycle.");
     }
   }
 

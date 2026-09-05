@@ -5,6 +5,7 @@ export interface ParsedCycle {
   unit: CycleUnit;
   source: string;
   label: string;
+  parts?: Array<{ amount: number; unit: CycleUnit }>;
 }
 
 export type CycleParseResult =
@@ -42,6 +43,20 @@ export function parseCycle(value: unknown): CycleParseResult {
   const normalized = value.trim().toLowerCase();
   if (!normalized || normalized === "never" || normalized === "off") {
     return { kind: "disabled" };
+  }
+
+  const segments = normalized.split(/\s*\+\s*|\s+(?=\d)/);
+  if (segments.length > 1) {
+    const parts: Array<{ amount: number; unit: CycleUnit }> = [];
+    const labels: string[] = [];
+    for (const segment of segments) {
+      const parsed = parseCycle(segment);
+      if (parsed.kind !== "cycle") return { kind: "invalid", reason: `Unsupported cycle "${value}".` };
+      parts.push({ amount: parsed.cycle.amount, unit: parsed.cycle.unit });
+      labels.push(parsed.cycle.label);
+    }
+    const first = parts[0]!;
+    return { kind: "cycle", cycle: { ...first, source: normalized, label: labels.join(" "), parts } };
   }
 
   const match = /^(\d+)\s*(d|days?|w|weeks?|m|months?|y|years?)$/.exec(normalized);
@@ -97,6 +112,19 @@ export function startOfLocalDay(date: Date): Date {
 }
 
 export function addCycle(date: Date, cycle: ParsedCycle): Date {
+  if (cycle.parts) {
+    // Apply calendar months before fixed days so month lengths stay meaningful.
+    let months = 0;
+    let days = 0;
+    for (const part of cycle.parts) {
+      if (part.unit === "year") months += part.amount * 12;
+      else if (part.unit === "month") months += part.amount;
+      else days += part.amount * (part.unit === "week" ? 7 : 1);
+    }
+    const result = addMonthsClamped(date, months);
+    result.setDate(result.getDate() + days);
+    return startOfLocalDay(result);
+  }
   let result = new Date(date);
 
   switch (cycle.unit) {
@@ -119,23 +147,28 @@ export function addCycle(date: Date, cycle: ParsedCycle): Date {
 
 export function calculateNextDue(
   lastVisitedAt: unknown,
-  cycle: ParsedCycle,
-  restUntil?: unknown
+  cycle: ParsedCycle
 ): Date | null {
   const visited = parseVisitedDate(lastVisitedAt);
-  const scheduled = visited ? addCycle(visited, cycle) : null;
-  const extended = parseVisitedDate(restUntil);
-  if (extended && (!scheduled || extended > scheduled)) return extended;
-  return scheduled;
+  return visited ? addCycle(visited, cycle) : null;
 }
 
-export function extendRestUntil(
-  dueAt: Date | null,
-  extension: ParsedCycle,
-  now = new Date()
-): Date {
-  const today = startOfLocalDay(now);
-  return addCycle(dueAt && dueAt > today ? dueAt : today, extension);
+export function extendCycleValue(cycle: ParsedCycle, extension: ParsedCycle): string {
+  let months = 0;
+  let days = 0;
+  for (const part of [...(cycle.parts ?? [cycle]), ...(extension.parts ?? [extension])]) {
+    if (part.unit === "year") months += part.amount * 12;
+    else if (part.unit === "month") months += part.amount;
+    else days += part.amount * (part.unit === "week" ? 7 : 1);
+  }
+  if (!Number.isSafeInteger(months) || !Number.isSafeInteger(days)) {
+    throw new Error("Cycle duration is too large.");
+  }
+  const label = (amount: number, unit: CycleUnit) => `${amount} ${unit}${amount === 1 ? "" : "s"}`;
+  const parts: string[] = [];
+  if (months) parts.push(months % 12 === 0 ? label(months / 12, "year") : label(months, "month"));
+  if (days) parts.push(days % 7 === 0 ? label(days / 7, "week") : label(days, "day"));
+  return parts.join(" ");
 }
 
 export function parseVisitedDate(value: unknown): Date | null {

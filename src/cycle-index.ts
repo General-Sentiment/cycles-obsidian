@@ -20,7 +20,7 @@ export class CycleIndex {
 
     const visited = parseVisitedDate(cache?.frontmatter?.visited);
     const lastVisitedAt = visited ? formatVisitedProperty(visited) : null;
-    const dueAt = calculateNextDue(lastVisitedAt, result.cycle, cache?.frontmatter?.rest_until);
+    const dueAt = calculateNextDue(lastVisitedAt, result.cycle);
     const imageValue = cache?.frontmatter?.image;
     const image =
       typeof imageValue === "string" && imageValue.trim()

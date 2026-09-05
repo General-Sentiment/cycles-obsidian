@@ -23,7 +23,7 @@ The sidebar header can switch between due notes and all notes with a valid `cycl
 
 Right-click any row and choose **Delete** to use Obsidian's standard note deletion flow, including its configured confirmation, trash location, and unlinked attachment handling. Canceling the confirmation keeps the note. Rows visited during the current sidebar session also offer **Reset visit**.
 
-The **Extend rest** submenu adds 1 week, 2 weeks, 1 month, 2 months, or 3 months to the next appearance (starting from today for overdue or never-visited notes). This stores a `rest_until` date without changing `cycle` or `visited`. Repeated extensions accumulate; visiting the note or resetting its visit clears the extension. Months use calendar arithmetic, clamped to the last day of shorter months.
+The **Extend cycle** submenu permanently adds 1 week, 2 weeks, 1 month, 2 months, or 3 months to the note's `cycle` property. For example, `1 month` plus a month becomes `2 months`, and `1 month` plus a week becomes `1 month 1 week`. Mixed durations apply calendar months first, then days or weeks. The last-visited date stays unchanged.
 
 On desktop, Cycles can capture missing webpage previews locally. It prefers Open Graph and Twitter social images, center-crops them to square JPEGs, and falls back to a square webpage screenshot. The media folder is configurable and defaults to `media/cycles/`; changing it affects new captures without moving existing files. The note's `image` property becomes an Obsidian wikilink such as `[[media/cycles/example-abc1234-social.jpg]]`. Any custom `image` value is treated as an override and is never replaced. The image appears as a small square thumbnail in its due-note row.
 

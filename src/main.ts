@@ -1,6 +1,6 @@
 import { Notice, Plugin, TFile, normalizePath, type WorkspaceLeaf } from "obsidian";
 import { CycleIndex } from "./cycle-index";
-import { calculateNextDue, extendRestUntil, formatVisitedProperty, parseCycle, type ParsedCycle } from "./cycle";
+import { extendCycleValue, formatVisitedProperty, parseCycle, type ParsedCycle } from "./cycle";
 import { CYCLES_VIEW_TYPE, CyclesView } from "./cycles-view";
 import { migrateLegacyVisits } from "./legacy-migration";
 import { CyclesSettingTab } from "./settings";
@@ -139,7 +139,6 @@ export default class CyclesPlugin extends Plugin {
     try {
       await this.app.fileManager.processFrontMatter(file, (frontmatter) => {
         frontmatter.visited = formatVisitedProperty(new Date());
-        delete frontmatter.rest_until;
       });
     } catch (error) {
       this.suppressedMetadataRefreshes.delete(notePath);
@@ -152,7 +151,7 @@ export default class CyclesPlugin extends Plugin {
     }
   }
 
-  async extendRest(notePath: string, extension: ParsedCycle): Promise<void> {
+  async extendCycle(notePath: string, extension: ParsedCycle): Promise<void> {
     const file = this.app.vault.getAbstractFileByPath(notePath);
     if (!(file instanceof TFile) || file.extension !== "md") {
       throw new Error("Cycles could not find that note.");
@@ -163,8 +162,8 @@ export default class CyclesPlugin extends Plugin {
       if (parsed.kind !== "cycle") {
         throw new Error("That note no longer has a valid cycle.");
       }
-      const dueAt = calculateNextDue(frontmatter.visited, parsed.cycle, frontmatter.rest_until);
-      frontmatter.rest_until = formatVisitedProperty(extendRestUntil(dueAt, extension));
+      frontmatter.cycle = extendCycleValue(parsed.cycle, extension);
+      delete frontmatter.rest_until;
     });
   }
 
@@ -178,7 +177,6 @@ export default class CyclesPlugin extends Plugin {
     try {
       await this.app.fileManager.processFrontMatter(file, (frontmatter) => {
         delete frontmatter.visited;
-        delete frontmatter.rest_until;
       });
     } catch (error) {
       this.suppressedMetadataRefreshes.delete(notePath);
