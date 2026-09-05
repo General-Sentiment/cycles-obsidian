@@ -56,7 +56,7 @@ export class CyclesView extends ItemView {
     container.addClass("cycles-view");
 
     const header = container.createDiv({ cls: "cycles-header" });
-    header.createEl("h2", { text: this.showAllNotes ? "All notes" : "Due notes" });
+    header.createEl("h2", { text: "Cycles" });
     const headerActions = header.createDiv({ cls: "cycles-header-actions" });
     const visibilityButton = headerActions.createEl("button", {
       cls: "clickable-icon cycles-header-button cycles-visibility-toggle",
