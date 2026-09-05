@@ -13,21 +13,37 @@ visited: 2026-08-04
 
 Supported values are positive whole numbers followed by `d`, `w`, `m`, or `y`. Long forms such as `2 weeks` also work. Use `cycle: never` to opt out without deleting the property.
 
+## Using the sidebar
+
+### Opening and revisiting notes
+
 Notes with a valid cycle and no `visited` date are due immediately. Clicking a row opens its URL, or its note if no URL is set, and updates the note's `visited` property using Obsidian's `YYYY-MM-DD` date format. The row dims for the current sidebar session and disappears after refresh until its next cycle is due.
-
-When upgrading from the shard-based version, Cycles copies existing visit dates from `cycle-data/notes/` into their notes once. It leaves the legacy folder untouched as a backup but no longer reads or writes it afterward.
-
-The plugin settings independently control whether each row shows its cycle duration, website domain, and platform icon. **Show platform icons** is enabled by default and updates the sidebar immediately when toggled.
 
 The sidebar header can switch between due notes and all notes with a valid `cycle` property. In the all-notes view, due notes appear first and upcoming notes follow in next-due order.
 
+### Domains and platform icons
+
 URLs display a sanitized website domain without the protocol, `www.`, path, or trailing slash. A platform logo (or link or note icon) appears in the top-right corner, matching the title’s size and using muted secondary text color. Supported platforms include Are.na, YouTube, Instagram, X/Twitter, Threads, Spotify, Bandcamp, SoundCloud, TikTok, Bluesky, Substack, Vimeo, Reddit, GitHub, Facebook, Twitch, and Pinterest. Logos from Simple Icons and the Are.na website are bundled locally; icons can be hidden with **Show platform icons**.
+
+### Right-click actions
 
 Right-click any row and choose **Open note** to open the underlying note directly. **Mark visited** (or **Option/Alt+click** on a row) starts the next cycle without opening anything: the row dims and hides after refresh until it is due again. Choose **Delete** to use Obsidian's standard note deletion flow, including its configured confirmation, trash location, and unlinked attachment handling. Canceling the confirmation keeps the note. Rows visited during the current sidebar session also offer **Reset visit**.
 
+### Extending a cycle
+
 The **Extend cycle** submenu permanently adds 1 week, 2 weeks, 1 month, 2 months, or 3 months to the note's `cycle` property. For example, `1 month` plus a month becomes `2 months`, and `1 month` plus a week becomes `1 month 1 week`. Extensions simplify every 4 accumulated weeks (28 days) into 1 month: `2 months 2 weeks` plus `2 weeks` becomes `3 months`. The resulting months use calendar-month scheduling; existing properties are only simplified when extended. Mixed durations apply calendar months first, then days or weeks. The last-visited date stays unchanged. Extended rows stay in place with their updated cycle until you refresh the sidebar; refresh then applies the new due dates.
 
+## Settings
+
+### Appearance
+
+The plugin settings independently control whether each row shows its cycle duration, website domain, and platform icon. **Show platform icons** is enabled by default and updates the sidebar immediately when toggled.
+
+### Webpage previews
+
 On desktop, Cycles can capture missing webpage previews locally. It prefers Open Graph and Twitter social images, center-crops them to square JPEGs, and falls back to a square webpage screenshot. The media folder is configurable and defaults to `media/cycles/`; changing it affects new captures without moving existing files. The note's `image` property becomes an Obsidian wikilink such as `[[media/cycles/example-abc1234-social.jpg]]`. Any custom `image` value is treated as an override and is never replaced. The image appears as a small square thumbnail in its due-note row.
+
+### Placeholder icons
 
 When no usable image exists, the row still shows a clickable square placeholder. Cycles reads either `category` or `categories` and chooses an Obsidian icon—for example, Person or People uses a user icon, photography uses a camera, music uses a music icon, and athletic categories use an activity icon. Unknown or missing categories use a generic note icon.
 
@@ -36,6 +52,10 @@ When no usable image exists, the row still shows a clickable square placeholder.
 - **Cycles: Open due notes**
 - **Cycles: Mark active note visited**
 
+## Upgrading from older versions
+
+When upgrading from the shard-based version, Cycles copies existing visit dates from `cycle-data/notes/` into their notes once. It leaves the legacy folder untouched as a backup but no longer reads or writes it afterward.
+
 ## Development
 
 ```bash
@@ -43,5 +63,7 @@ npm install
 npm test
 npm run build
 ```
+
+### Installing the local build
 
 Copy or symlink `main.js`, `manifest.json`, and `styles.css` into `<vault>/.obsidian/plugins/cycles/`, then enable the plugin in Obsidian.
