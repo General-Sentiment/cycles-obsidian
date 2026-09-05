@@ -1,76 +1,46 @@
 # Cycles Obsidian
 
-Cycles resurfaces notes according to two small frontmatter properties.
+Bring notes and saved links back when it’s time to revisit them.
 
-## Installation
+## Getting started
 
-Cycles currently supports desktop Obsidian. Download `main.js`, `manifest.json`, and `styles.css` from the [latest release](https://github.com/General-Sentiment/cycles-obsidian/releases/latest), place them in `<vault>/.obsidian/plugins/cycles/`, and enable Cycles under **Settings → Community plugins**.
-
-## Note format
+Add a `cycle` property to any note:
 
 ```yaml
 ---
 cycle: 2w
-visited: 2026-08-04
 ---
 ```
 
-Supported values are positive whole numbers followed by `d`, `w`, `m`, or `y`. Long forms such as `2 weeks` also work. Use `cycle: never` to opt out without deleting the property.
+Open **Cycles** from the ribbon or command palette. Click a row to open its URL, or the note if there’s no URL. Cycles records the visit, dims the row, and hides it after refresh until it’s due again.
 
-## Using the sidebar
+Use durations like `7d`, `2w`, `3m`, or `1y`. Mixed durations such as `1 month 2 weeks` also work. Set `cycle: never` to stop resurfacing a note.
 
-### Opening and revisiting notes
+## Row actions
 
-Notes with a valid cycle and no `visited` date are due immediately. Clicking a row opens its URL, or its note if no URL is set, and updates the note's `visited` property using Obsidian's `YYYY-MM-DD` date format. The row dims for the current sidebar session and disappears after refresh until its next cycle is due.
+Right-click a row to:
 
-The sidebar header can switch between due notes and all notes with a valid `cycle` property. In the all-notes view, due notes appear first and upcoming notes follow in next-due order.
+- **Open note** — open the underlying note.
+- **Mark visited** — start the next cycle without opening anything. Option/Alt+click does the same.
+- **Extend cycle** — increase the recurring duration. Every four accumulated weeks becomes a calendar month.
+- **Reset visit** — clear a visit made in the current sidebar session.
+- **Delete** — use Obsidian’s normal deletion and attachment handling.
 
-### Domains and platform icons
-
-URLs display a sanitized website domain without the protocol, `www.`, path, or trailing slash. A platform logo (or link or note icon) appears in the top-right corner, matching the title’s size and using muted secondary text color. Supported platforms include Are.na, YouTube, Instagram, X/Twitter, Threads, Spotify, Bandcamp, SoundCloud, TikTok, Bluesky, Substack, Vimeo, Reddit, GitHub, Facebook, Twitch, and Pinterest. Logos from Simple Icons and the Are.na website are bundled locally; icons can be hidden with **Show platform icons**.
-
-### Right-click actions
-
-Right-click any row and choose **Open note** to open the underlying note directly. **Mark visited** (or **Option/Alt+click** on a row) starts the next cycle without opening anything: the row dims and hides after refresh until it is due again. Choose **Delete** to use Obsidian's standard note deletion flow, including its configured confirmation, trash location, and unlinked attachment handling. Canceling the confirmation keeps the note. Rows visited during the current sidebar session also offer **Reset visit**.
-
-### Extending a cycle
-
-The **Extend cycle** submenu permanently adds 1 week, 2 weeks, 1 month, 2 months, or 3 months to the note's `cycle` property. For example, `1 month` plus a month becomes `2 months`, and `1 month` plus a week becomes `1 month 1 week`. Extensions simplify every 4 accumulated weeks (28 days) into 1 month: `2 months 2 weeks` plus `2 weeks` becomes `3 months`. The resulting months use calendar-month scheduling; existing properties are only simplified when extended. Mixed durations apply calendar months first, then days or weeks. The last-visited date stays unchanged. Extended rows stay in place with their updated cycle until you refresh the sidebar; refresh then applies the new due dates.
+The header switches between due notes and all cycling notes. Extended rows stay visible until refresh.
 
 ## Settings
 
-### Appearance
+Show or hide cycle durations, website domains, and platform icons. Enable webpage previews and choose where to save them (default: `media/cycles/`). Custom `image` properties are preserved.
 
-The plugin settings independently control whether each row shows its cycle duration, website domain, and platform icon. **Show platform icons** is enabled by default and updates the sidebar immediately when toggled.
+## Installation
 
-### Webpage previews
-
-On desktop, Cycles can capture missing webpage previews locally. It prefers Open Graph and Twitter social images, center-crops them to square JPEGs, and falls back to a square webpage screenshot. The media folder is configurable and defaults to `media/cycles/`; changing it affects new captures without moving existing files. The note's `image` property becomes an Obsidian wikilink such as `[[media/cycles/example-abc1234-social.jpg]]`. Any custom `image` value is treated as an override and is never replaced. The image appears as a small square thumbnail in its due-note row.
-
-### Placeholder icons
-
-When no usable image exists, the row still shows a clickable square placeholder. Cycles reads either `category` or `categories` and chooses an Obsidian icon—for example, Person or People uses a user icon, photography uses a camera, music uses a music icon, and athletic categories use an activity icon. Unknown or missing categories use a generic note icon.
-
-## Commands
-
-- **Cycles: Open due notes**
-- **Cycles: Mark active note visited**
+Desktop Obsidian only. Download `main.js`, `manifest.json`, and `styles.css` from the [latest release](https://github.com/General-Sentiment/cycles-obsidian/releases/latest), place them in `<vault>/.obsidian/plugins/cycles/`, and enable Cycles under **Settings → Community plugins**.
 
 ## Network use and privacy
 
-Scheduling, visit tracking, and platform icons work locally. Cycles does not require an account, payment, or a third-party API service, and does not collect telemetry.
+Scheduling and visit tracking stay in your vault. No account, payment, or telemetry is required or used.
 
-**Capture missing images** is enabled by default. It requests the websites in your notes' `url` properties and their linked social-image hosts to generate previews. If no social image is available, it loads the page in a hidden, sandboxed browser window, which may request the page's third-party resources. These websites receive ordinary web requests, including your IP address. Turn off **Capture missing images** to disable automatic preview requests. External URLs in an `image` property also load from their image host when displayed. Clicking a URL row opens that website in your browser.
-
-Generated preview images and note updates are saved inside your vault. Platform icons are bundled with the plugin and require no network requests.
-
-## License
-
-Cycles is distributed under the [MIT License](LICENSE). Simple Icons assets are provided under CC0; the Are.na mark comes from the Are.na website. Brand marks remain the property of their respective owners.
-
-## Upgrading from older versions
-
-When upgrading from the shard-based version, Cycles copies existing visit dates from `cycle-data/notes/` into their notes once. It leaves the legacy folder untouched as a backup but no longer reads or writes it afterward.
+**Capture missing images** is on by default. It requests your saved URLs and their image hosts; screenshot fallbacks load pages and their third-party resources in a hidden, sandboxed browser. Those sites receive ordinary web requests, including your IP address. Disable the setting to stop automatic preview requests. Remote `image` URLs still load when displayed, and clicking a URL row opens that website. Generated previews are saved in your vault; platform icons are bundled locally.
 
 ## Development
 
@@ -80,6 +50,8 @@ npm test
 npm run build
 ```
 
-### Installing the local build
+Copy the build files into your vault’s plugin folder to try changes.
 
-Copy or symlink `main.js`, `manifest.json`, and `styles.css` into `<vault>/.obsidian/plugins/cycles/`, then enable the plugin in Obsidian.
+## License
+
+[MIT](LICENSE). Simple Icons assets use CC0; the Are.na mark comes from its website. Brand marks belong to their respective owners.
