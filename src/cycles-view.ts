@@ -113,7 +113,13 @@ export class CyclesView extends ItemView {
           ? { href: note.url, target: "_blank", rel: "noopener noreferrer", "aria-label": `Visit ${note.file.basename} URL` }
           : { role: "button", tabindex: "0", "aria-label": `Open ${note.file.basename}` }
       });
-      item.addEventListener("click", () => {
+      item.addEventListener("click", (event) => {
+        if (event.ctrlKey) {
+          event.preventDefault();
+          event.stopPropagation();
+          void this.markVisited(note.file.path, item);
+          return;
+        }
         void this.markVisited(note.file.path, item);
         if (!note.url) void this.app.workspace.getLeaf(false).openFile(note.file);
       });
@@ -129,6 +135,11 @@ export class CyclesView extends ItemView {
       item.addEventListener("contextmenu", (event) => {
         event.preventDefault();
         event.stopPropagation();
+        // macOS sends Control-click as a contextmenu event instead of a click.
+        if (event.ctrlKey) {
+          void this.markVisited(note.file.path, item);
+          return;
+        }
         const menu = new Menu();
         menu.addItem((menuItem) => {
           menuItem.setTitle("Open note").setIcon("file-text").onClick(() => {
