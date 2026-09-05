@@ -36,7 +36,15 @@ Show or hide cycle durations, website domains, and platform icons. Enable webpag
 
 ## Installation
 
-Desktop Obsidian only. Download `main.js`, `manifest.json`, and `styles.css` from the [latest release](https://github.com/General-Sentiment/cycles-obsidian/releases/latest), place them in `<vault>/.obsidian/plugins/cycles/`, and enable Cycles under **Settings → Community plugins**.
+Desktop Obsidian only.
+
+1. Open **Settings → Community plugins** and turn off Restricted mode if prompted.
+2. Select **Browse**, search for **Cycles**, and choose the plugin by **General Sentiment**.
+3. Select **Install**, then **Enable**.
+
+You can also open the [Cycles directory listing](https://community.obsidian.md/plugins/cycles) and select **Add to Obsidian**.
+
+The listing is currently awaiting automated review, so directory installation may not be available yet. In the meantime, download `main.js`, `manifest.json`, and `styles.css` from the [latest release](https://github.com/General-Sentiment/cycles-obsidian/releases/latest), place them in `<vault>/.obsidian/plugins/cycles/`, and enable Cycles under **Settings → Community plugins**.
 
 ## Network use and privacy
 
