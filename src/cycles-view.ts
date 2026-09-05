@@ -136,6 +136,11 @@ export class CyclesView extends ItemView {
             void this.app.workspace.getLeaf(false).openFile(note.file);
           });
         });
+        menu.addItem((menuItem) => {
+          menuItem.setTitle("Mark visited").setIcon("check")
+            .setDisabled(this.visitedPaths.has(note.file.path))
+            .onClick(() => void this.markVisited(note.file.path, item));
+        });
         menu.addSeparator();
         menu.addItem((menuItem) => {
           menuItem.setTitle("Extend cycle").setIcon("clock-plus");
