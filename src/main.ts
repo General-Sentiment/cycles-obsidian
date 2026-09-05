@@ -173,20 +173,9 @@ export default class CyclesPlugin extends Plugin {
       throw new Error("Cycles could not find that note.");
     }
 
-    this.suppressedMetadataRefreshes.add(notePath);
-    try {
-      await this.app.fileManager.processFrontMatter(file, (frontmatter) => {
-        delete frontmatter.visited;
-      });
-    } catch (error) {
-      this.suppressedMetadataRefreshes.delete(notePath);
-      throw error;
-    } finally {
-      window.setTimeout(
-        () => this.suppressedMetadataRefreshes.delete(notePath),
-        1_500
-      );
-    }
+    await this.app.fileManager.processFrontMatter(file, (frontmatter) => {
+      delete frontmatter.visited;
+    });
   }
 
   captureMissingImages(): void {

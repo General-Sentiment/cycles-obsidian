@@ -14,7 +14,7 @@ const CYCLE_EXTENSIONS: ParsedCycle[] = [
 
 export class CyclesView extends ItemView {
   private visitedPaths = new Set<string>();
-  private extendedFiles = new Set<TFile>();
+  private retainedFiles = new Set<TFile>();
   private displayedFiles: TFile[] = [];
   private showAllNotes = false;
 
@@ -43,7 +43,7 @@ export class CyclesView extends ItemView {
 
   async refreshFromState(): Promise<void> {
     this.visitedPaths.clear();
-    this.extendedFiles.clear();
+    this.retainedFiles.clear();
     this.displayedFiles = [];
     await this.render();
     this.plugin.captureMissingImages();
@@ -116,7 +116,7 @@ export class CyclesView extends ItemView {
             menuItem
               .setTitle("Reset visit")
               .setIcon("rotate-ccw")
-              .onClick(() => void this.resetVisit(note.file.path));
+              .onClick(() => void this.resetVisit(note.file));
           });
           menu.addSeparator();
         }
@@ -207,9 +207,9 @@ export class CyclesView extends ItemView {
 
   private getDueNotesForSidebar() {
     const notes = this.getAllNotesForSidebar().filter((note) =>
-      note.due || this.visitedPaths.has(note.file.path) || this.extendedFiles.has(note.file)
+      note.due || this.visitedPaths.has(note.file.path) || this.retainedFiles.has(note.file)
     );
-    if (this.extendedFiles.size > 0) {
+    if (this.retainedFiles.size > 0) {
       const positions = new Map(this.displayedFiles.map((file, index) => [file, index]));
       notes.sort((a, b) =>
         (positions.get(a.file) ?? Infinity) - (positions.get(b.file) ?? Infinity)
@@ -244,12 +244,12 @@ export class CyclesView extends ItemView {
   }
 
   private async extendCycle(file: TFile, extension: ParsedCycle): Promise<void> {
-    const alreadyExtended = this.extendedFiles.has(file);
-    this.extendedFiles.add(file);
+    const alreadyRetained = this.retainedFiles.has(file);
+    this.retainedFiles.add(file);
     try {
       await this.plugin.extendCycle(file.path, extension);
     } catch (error) {
-      if (!alreadyExtended) this.extendedFiles.delete(file);
+      if (!alreadyRetained) this.retainedFiles.delete(file);
       new Notice(error instanceof Error ? error.message : "Could not extend cycle.");
     }
   }
@@ -259,19 +259,22 @@ export class CyclesView extends ItemView {
       const deleted = await this.app.fileManager.promptForDeletion(file);
       if (!deleted) return;
       this.visitedPaths.delete(file.path);
-      this.extendedFiles.delete(file);
+      this.retainedFiles.delete(file);
       await this.render();
     } catch (error) {
       new Notice(error instanceof Error ? error.message : "Could not delete note.");
     }
   }
 
-  private async resetVisit(notePath: string): Promise<void> {
+  private async resetVisit(file: TFile): Promise<void> {
+    const alreadyRetained = this.retainedFiles.has(file);
+    this.retainedFiles.add(file);
     try {
-      await this.plugin.resetVisit(notePath);
-      this.visitedPaths.delete(notePath);
+      await this.plugin.resetVisit(file.path);
+      this.visitedPaths.delete(file.path);
       await this.render();
     } catch (error) {
+      if (!alreadyRetained) this.retainedFiles.delete(file);
       new Notice(error instanceof Error ? error.message : "Could not reset visit.");
     }
   }
