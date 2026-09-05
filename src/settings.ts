@@ -27,7 +27,7 @@ export class CyclesSettingTab extends PluginSettingTab {
 
     new Setting(this.containerEl)
       .setName("Show website domain")
-      .setDesc("Show the website domain below each note title.")
+      .setDesc("Show the website domain below each title, or “Note” when there is no URL.")
       .addToggle((toggle) =>
         toggle
           .setValue(this.plugin.settings.showWebsiteDomain)

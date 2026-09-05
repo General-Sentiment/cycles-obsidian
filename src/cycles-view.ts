@@ -184,7 +184,9 @@ export class CyclesView extends ItemView {
       const noteContent = item.createDiv({ cls: "cycles-note-content" });
       const title = noteContent.createDiv({ cls: "cycles-note-title" });
       title.createSpan({ cls: "cycles-note-title-text", text: note.file.basename });
-      const domain = this.plugin.settings.showWebsiteDomain ? formatWebsiteDomain(note.url) : null;
+      const domain = this.plugin.settings.showWebsiteDomain
+        ? formatWebsiteDomain(note.url) ?? "Note"
+        : null;
       if (this.plugin.settings.showCycleDuration || domain) {
         const metadata = noteContent.createDiv({ cls: "cycles-note-meta" });
         if (domain) {
@@ -193,7 +195,7 @@ export class CyclesView extends ItemView {
             const platform = getPlatformIcon(note.url);
             const icon = website.createSpan({
               cls: "cycles-platform-icon",
-              attr: { "aria-hidden": "true", title: platform?.title ?? "Website" }
+              attr: { "aria-hidden": "true", title: platform?.title ?? (note.url ? "Website" : "Note") }
             });
             if (platform) {
               const svg = icon.ownerDocument.createElementNS("http://www.w3.org/2000/svg", "svg");
@@ -205,7 +207,7 @@ export class CyclesView extends ItemView {
               svg.appendChild(path);
               icon.appendChild(svg);
             } else {
-              setIcon(icon, "link");
+              setIcon(icon, note.url ? "link" : "file-text");
             }
           }
           website.createSpan({ cls: "cycles-note-domain-text", text: domain });
