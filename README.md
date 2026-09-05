@@ -2,6 +2,10 @@
 
 Cycles resurfaces notes according to two small frontmatter properties.
 
+## Installation
+
+Cycles currently supports desktop Obsidian. Download `main.js`, `manifest.json`, and `styles.css` from the [latest release](https://github.com/General-Sentiment/cycles-obsidian/releases/latest), place them in `<vault>/.obsidian/plugins/cycles/`, and enable Cycles under **Settings → Community plugins**.
+
 ## Note format
 
 ```yaml
@@ -51,6 +55,18 @@ When no usable image exists, the row still shows a clickable square placeholder.
 
 - **Cycles: Open due notes**
 - **Cycles: Mark active note visited**
+
+## Network use and privacy
+
+Scheduling, visit tracking, and platform icons work locally. Cycles does not require an account, payment, or a third-party API service, and does not collect telemetry.
+
+**Capture missing images** is enabled by default. It requests the websites in your notes' `url` properties and their linked social-image hosts to generate previews. If no social image is available, it loads the page in a hidden, sandboxed browser window, which may request the page's third-party resources. These websites receive ordinary web requests, including your IP address. Turn off **Capture missing images** to disable automatic preview requests. External URLs in an `image` property also load from their image host when displayed. Clicking a URL row opens that website in your browser.
+
+Generated preview images and note updates are saved inside your vault. Platform icons are bundled with the plugin and require no network requests.
+
+## License
+
+Cycles is distributed under the [MIT License](LICENSE). Simple Icons assets are provided under CC0; the Are.na mark comes from the Are.na website. Brand marks remain the property of their respective owners.
 
 ## Upgrading from older versions
 
