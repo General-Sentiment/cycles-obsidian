@@ -175,7 +175,7 @@ export class CyclesView extends ItemView {
           attr: { "aria-hidden": "true", title: platform.title }
         });
         const svg = icon.ownerDocument.createElementNS("http://www.w3.org/2000/svg", "svg");
-        svg.setAttribute("viewBox", "0 0 24 24");
+        svg.setAttribute("viewBox", platform.viewBox ?? "0 0 24 24");
         svg.setAttribute("fill", "currentColor");
         svg.setAttribute("focusable", "false");
         const path = icon.ownerDocument.createElementNS("http://www.w3.org/2000/svg", "path");

@@ -3,6 +3,9 @@ import { getPlatformIcon } from "../src/platform-icon";
 
 describe("platform icons", () => {
   it.each([
+    ["https://www.are.na/person/channel", "Are.na"],
+    ["https://are.na/block/123", "Are.na"],
+    ["https://sander.are.na/person/channel", "Are.na"],
     ["https://www.youtube.com/watch?v=abc", "YouTube"],
     ["https://youtu.be/abc", "YouTube"],
     ["https://www.instagram.com/person", "Instagram"],
@@ -28,7 +31,7 @@ describe("platform icons", () => {
   });
 
   it.each([null, "", "invalid", "javascript:alert(1)", "https://example.com",
-    "https://notyoutube.com", "https://instagram.com.example.com", "https://example.com/youtube.com",
+    "https://are.na.example.com", "https://notare.na", "https://notyoutube.com", "https://instagram.com.example.com", "https://example.com/youtube.com",
     "https://youtube.com@example.com"])('does not misidentify %s', (url) => {
     expect(getPlatformIcon(url)).toBeNull();
   });
