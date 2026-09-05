@@ -4,7 +4,9 @@ Bring notes and saved links back when it’s time to revisit them.
 
 ## Getting started
 
-Add a `cycle` property to any note:
+Run **Cycles: Add Cycle Note** from the command palette to paste a URL, fetch its title and preview, and confirm the title and cycle period. Examples such as `2 weeks` and `1 month` are shown in the dialog. The note opens with its media saved locally and its cycle starting today.
+
+Or add a `cycle` property to any existing note:
 
 ```yaml
 ---
@@ -40,7 +42,7 @@ Desktop Obsidian only. Download `main.js`, `manifest.json`, and `styles.css` fro
 
 Scheduling and visit tracking stay in your vault. No account, payment, or telemetry is required or used.
 
-**Capture missing images** is on by default. It requests your saved URLs and their image hosts; screenshot fallbacks load pages and their third-party resources in a hidden, sandboxed browser. Those sites receive ordinary web requests, including your IP address. Disable the setting to stop automatic preview requests. Remote `image` URLs still load when displayed, and clicking a URL row opens that website. Generated previews are saved in your vault; platform icons are bundled locally.
+**Add Cycle Note** fetches details and media from the URL you provide when you run it. **Capture missing images** is on by default. It requests your saved URLs and their image hosts; screenshot fallbacks load pages and their third-party resources in a hidden, sandboxed browser. Those sites receive ordinary web requests, including your IP address. Disable the setting to stop automatic preview requests. Remote `image` URLs still load when displayed, and clicking a URL row opens that website. Generated previews are saved in your vault; platform icons are bundled locally.
 
 ## Development
 

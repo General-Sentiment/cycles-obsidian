@@ -7,6 +7,10 @@ import { CyclesSettingTab } from "./settings";
 import { ScreenshotService } from "./screenshot-service";
 import { DEFAULT_MEDIA_FOLDER, normalizeMediaFolder } from "./screenshot-path";
 import type { CyclesSettings } from "./types";
+import { AddCycleUrlModal } from "./add-cycle-modal";
+import type { LinkMetadata } from "./link-metadata";
+import type { PreparedPreview } from "./screenshot-service";
+import { cycleNoteName, newCycleNoteContent } from "./new-cycle-note";
 
 const DEFAULT_SETTINGS: CyclesSettings = {
   mediaFolder: DEFAULT_MEDIA_FOLDER,
@@ -66,6 +70,12 @@ export default class CyclesPlugin extends Plugin {
     );
 
     this.addRibbonIcon("refresh-cw", "Open Cycles", () => void this.activateView());
+
+    this.addCommand({
+      id: "add-cycle-note",
+      name: "Add Cycle Note",
+      callback: () => new AddCycleUrlModal(this).open()
+    });
 
     this.addCommand({
       id: "open-due-notes",
@@ -128,6 +138,23 @@ export default class CyclesPlugin extends Plugin {
     if (leaf.view instanceof CyclesView) {
       await leaf.view.refreshFromState();
     }
+  }
+
+  async createCycleNote(metadata: LinkMetadata, cycle: string, preview: PreparedPreview | null): Promise<TFile> {
+    const content = newCycleNoteContent(metadata.title, metadata.url, cycle, metadata.description);
+    const parent = this.app.fileManager.getNewFileParent(this.app.workspace.getActiveFile()?.path ?? "");
+    const basename = cycleNoteName(metadata.title);
+    const prefix = parent.path === "/" ? "" : `${parent.path}/`;
+    let path = normalizePath(`${prefix}${basename}.md`);
+    for (let suffix = 2; this.app.vault.getAbstractFileByPath(path); suffix++) {
+      path = normalizePath(`${prefix}${basename} ${suffix}.md`);
+    }
+    const file = await this.app.vault.create(path, content);
+    if (preview) {
+      try { await this.screenshotService.savePreparedPreview(file, preview); }
+      catch { new Notice("Note created, but its preview could not be saved."); }
+    }
+    return file;
   }
 
   async recordVisit(notePath: string): Promise<void> {

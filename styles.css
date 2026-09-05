@@ -183,3 +183,30 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+.cycles-add-url {
+  color: var(--text-muted);
+  overflow-wrap: anywhere;
+}
+
+.cycles-add-preview img {
+  border-radius: var(--radius-m);
+  height: 96px;
+  object-fit: cover;
+  width: 96px;
+}
+
+.cycles-add-status {
+  color: var(--text-muted);
+  font-size: var(--font-ui-small);
+}
+
+.cycles-form-error {
+  color: var(--text-error);
+}
+
+.cycles-cycle-examples {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--size-4-2);
+}

@@ -11,6 +11,11 @@ interface ScreenshotCandidate {
   image: string | null;
 }
 
+export interface PreparedPreview {
+  data: ArrayBuffer;
+  kind: "social" | "screenshot";
+}
+
 interface NativeImageLike {
   crop(rect: { x: number; y: number; width: number; height: number }): NativeImageLike;
   getSize(): { width: number; height: number };
@@ -61,6 +66,29 @@ export class ScreenshotService {
 
   resetAttempts(): void {
     this.attemptedPaths.clear();
+  }
+
+  async preparePreview(url: string, imageUrl: string | null): Promise<PreparedPreview> {
+    if (imageUrl) {
+      try {
+        return { data: await this.downloadAndCropImage(imageUrl), kind: "social" };
+      } catch {
+        // A blocked or invalid social image can still have a usable screenshot.
+      }
+    }
+    return { data: await this.captureUrl(url), kind: "screenshot" };
+  }
+
+  async savePreparedPreview(file: TFile, preview: PreparedPreview): Promise<void> {
+    this.attemptedPaths.add(file.path);
+    const folder = this.getMediaFolder();
+    const paths = getPreviewPaths(file.path, file.basename, folder);
+    const path = paths[preview.kind];
+    await this.ensureFolder(folder);
+    await this.writeImage(path, preview.data);
+    await this.app.fileManager.processFrontMatter(file, (frontmatter) => {
+      frontmatter.image = `[[${path}]]`;
+    });
   }
 
   enqueue(candidates: ScreenshotCandidate[]): void {
