@@ -111,15 +111,6 @@ export class CyclesView extends ItemView {
         event.preventDefault();
         event.stopPropagation();
         const menu = new Menu();
-        if (this.visitedPaths.has(note.file.path)) {
-          menu.addItem((menuItem) => {
-            menuItem
-              .setTitle("Reset visit")
-              .setIcon("rotate-ccw")
-              .onClick(() => void this.resetVisit(note.file));
-          });
-          menu.addSeparator();
-        }
         menu.addItem((menuItem) => {
           menuItem.setTitle("Extend cycle").setIcon("clock-plus");
           // Obsidian exposes this at runtime but omits it from its public types.
@@ -132,6 +123,14 @@ export class CyclesView extends ItemView {
             });
           }
         });
+        if (this.visitedPaths.has(note.file.path)) {
+          menu.addItem((menuItem) => {
+            menuItem
+              .setTitle("Reset visit")
+              .setIcon("rotate-ccw")
+              .onClick(() => void this.resetVisit(note.file));
+          });
+        }
         menu.addSeparator();
         menu.addItem((menuItem) => {
           menuItem
