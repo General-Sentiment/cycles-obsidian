@@ -12,3 +12,9 @@ export function parseHttpUrl(value: unknown): string | null {
     return null;
   }
 }
+
+export function formatWebsiteDomain(value: unknown): string | null {
+  const url = parseHttpUrl(value);
+  if (!url) return null;
+  return new URL(url).hostname.toLowerCase().replace(/^www\./, "").replace(/\.$/, "");
+}

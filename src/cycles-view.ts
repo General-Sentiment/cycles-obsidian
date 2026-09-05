@@ -1,7 +1,8 @@
 import { ItemView, Menu, Notice, setIcon, type MenuItem, type TFile, type WorkspaceLeaf } from "obsidian";
-import { formatLastVisited, type ParsedCycle } from "./cycle";
+import { type ParsedCycle } from "./cycle";
 import type CyclesPlugin from "./main";
 import { getPlatformIcon } from "./platform-icon";
+import { formatWebsiteDomain } from "./url";
 
 export const CYCLES_VIEW_TYPE = "cycles-due-notes";
 
@@ -182,34 +183,35 @@ export class CyclesView extends ItemView {
       }
       const noteContent = item.createDiv({ cls: "cycles-note-content" });
       const title = noteContent.createDiv({ cls: "cycles-note-title" });
-      const platform = this.plugin.settings.showPlatformIcons ? getPlatformIcon(note.url) : null;
-      if (platform) {
-        const icon = title.createSpan({
-          cls: "cycles-platform-icon",
-          attr: { "aria-hidden": "true", title: platform.title }
-        });
-        const svg = icon.ownerDocument.createElementNS("http://www.w3.org/2000/svg", "svg");
-        svg.setAttribute("viewBox", platform.viewBox ?? "0 0 24 24");
-        svg.setAttribute("fill", "currentColor");
-        svg.setAttribute("focusable", "false");
-        const path = icon.ownerDocument.createElementNS("http://www.w3.org/2000/svg", "path");
-        path.setAttribute("d", platform.path);
-        svg.appendChild(path);
-        icon.appendChild(svg);
-      }
       title.createSpan({ cls: "cycles-note-title-text", text: note.file.basename });
-      if (
-        this.plugin.settings.showCycleDuration ||
-        this.plugin.settings.showLastVisited
-      ) {
+      const domain = this.plugin.settings.showWebsiteDomain ? formatWebsiteDomain(note.url) : null;
+      if (this.plugin.settings.showCycleDuration || domain) {
         const metadata = noteContent.createDiv({ cls: "cycles-note-meta" });
         if (this.plugin.settings.showCycleDuration) {
           metadata.createSpan({ text: `Every ${note.cycle.label}` });
         }
-        if (this.plugin.settings.showLastVisited) {
-          metadata.createSpan({
-            text: formatLastVisited(note.lastVisitedAt)
-          });
+        if (domain) {
+          const website = metadata.createDiv({ cls: "cycles-note-domain" });
+          if (this.plugin.settings.showPlatformIcons) {
+            const platform = getPlatformIcon(note.url);
+            const icon = website.createSpan({
+              cls: "cycles-platform-icon",
+              attr: { "aria-hidden": "true", title: platform?.title ?? "Website" }
+            });
+            if (platform) {
+              const svg = icon.ownerDocument.createElementNS("http://www.w3.org/2000/svg", "svg");
+              svg.setAttribute("viewBox", platform.viewBox ?? "0 0 24 24");
+              svg.setAttribute("fill", "currentColor");
+              svg.setAttribute("focusable", "false");
+              const path = icon.ownerDocument.createElementNS("http://www.w3.org/2000/svg", "path");
+              path.setAttribute("d", platform.path);
+              svg.appendChild(path);
+              icon.appendChild(svg);
+            } else {
+              setIcon(icon, "link");
+            }
+          }
+          website.createSpan({ cls: "cycles-note-domain-text", text: domain });
         }
       }
 

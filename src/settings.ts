@@ -26,13 +26,13 @@ export class CyclesSettingTab extends PluginSettingTab {
       );
 
     new Setting(this.containerEl)
-      .setName("Show last visited")
-      .setDesc("Show the most recent visit date, or “Never visited”, in each row.")
+      .setName("Show website domain")
+      .setDesc("Show the website domain below each note title.")
       .addToggle((toggle) =>
         toggle
-          .setValue(this.plugin.settings.showLastVisited)
+          .setValue(this.plugin.settings.showWebsiteDomain)
           .onChange(async (value) => {
-            this.plugin.settings.showLastVisited = value;
+            this.plugin.settings.showWebsiteDomain = value;
             await this.plugin.saveSettings();
             await this.plugin.refreshViews();
           })
@@ -40,7 +40,7 @@ export class CyclesSettingTab extends PluginSettingTab {
 
     new Setting(this.containerEl)
       .setName("Show platform icons")
-      .setDesc("Show platform logos such as YouTube and Instagram before note titles.")
+      .setDesc("Show platform logos such as YouTube and Instagram before website domains.")
       .addToggle((toggle) =>
         toggle
           .setValue(this.plugin.settings.showPlatformIcons)

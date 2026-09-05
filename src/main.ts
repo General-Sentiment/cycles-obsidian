@@ -11,7 +11,7 @@ import type { CyclesSettings } from "./types";
 const DEFAULT_SETTINGS: CyclesSettings = {
   mediaFolder: DEFAULT_MEDIA_FOLDER,
   showCycleDuration: true,
-  showLastVisited: true,
+  showWebsiteDomain: true,
   showPlatformIcons: true,
   captureMissingImages: true,
   legacyVisitMigrationCompleted: false
@@ -222,10 +222,10 @@ export default class CyclesPlugin extends Plugin {
         typeof loaded?.showCycleDuration === "boolean"
           ? loaded.showCycleDuration
           : DEFAULT_SETTINGS.showCycleDuration,
-      showLastVisited:
-        typeof loaded?.showLastVisited === "boolean"
-          ? loaded.showLastVisited
-          : DEFAULT_SETTINGS.showLastVisited,
+      showWebsiteDomain:
+        typeof loaded?.showWebsiteDomain === "boolean"
+          ? loaded.showWebsiteDomain
+          : DEFAULT_SETTINGS.showWebsiteDomain,
       showPlatformIcons:
         typeof loaded?.showPlatformIcons === "boolean"
           ? loaded.showPlatformIcons

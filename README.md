@@ -17,11 +17,11 @@ Notes with a valid cycle and no `visited` date are due immediately. Clicking a r
 
 When upgrading from the shard-based version, Cycles copies existing visit dates from `cycle-data/notes/` into their notes once. It leaves the legacy folder untouched as a backup but no longer reads or writes it afterward.
 
-The plugin settings independently control whether each row shows its cycle duration, last-visited date, and platform icon. **Show platform icons** is enabled by default and updates the sidebar immediately when toggled.
+The plugin settings independently control whether each row shows its cycle duration, website domain, and platform icon. **Show platform icons** is enabled by default and updates the sidebar immediately when toggled.
 
 The sidebar header can switch between due notes and all notes with a valid `cycle` property. In the all-notes view, due notes appear first and upcoming notes follow in next-due order.
 
-Recognized URLs display a small platform logo before the title, matching its text color. Supported platforms include Are.na, YouTube, Instagram, X/Twitter, Threads, Spotify, Bandcamp, SoundCloud, TikTok, Bluesky, Substack, Vimeo, Reddit, GitHub, Facebook, Twitch, and Pinterest. Logos from Simple Icons and the Are.na website are bundled locally; other websites keep a plain title.
+URLs display a sanitized website domain without the protocol, `www.`, path, or trailing slash. A small platform logo (or a link icon for other websites) precedes the domain in the same muted secondary text color. Supported platforms include Are.na, YouTube, Instagram, X/Twitter, Threads, Spotify, Bandcamp, SoundCloud, TikTok, Bluesky, Substack, Vimeo, Reddit, GitHub, Facebook, Twitch, and Pinterest. Logos from Simple Icons and the Are.na website are bundled locally; icons can be hidden with **Show platform icons**.
 
 Right-click any row and choose **Open note** to open the underlying note directly. Choose **Delete** to use Obsidian's standard note deletion flow, including its configured confirmation, trash location, and unlinked attachment handling. Canceling the confirmation keeps the note. Rows visited during the current sidebar session also offer **Reset visit**.
 

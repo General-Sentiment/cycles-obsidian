@@ -16,7 +16,7 @@ export interface CycleNote {
 export interface CyclesSettings {
   mediaFolder: string;
   showCycleDuration: boolean;
-  showLastVisited: boolean;
+  showWebsiteDomain: boolean;
   showPlatformIcons: boolean;
   captureMissingImages: boolean;
   legacyVisitMigrationCompleted: boolean;
