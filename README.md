@@ -13,7 +13,7 @@ visited: 2026-08-04
 
 Supported values are positive whole numbers followed by `d`, `w`, `m`, or `y`. Long forms such as `2 weeks` also work. Use `cycle: never` to opt out without deleting the property.
 
-Notes with a valid cycle and no `visited` date are due immediately. Opening a note or using its **Visit** URL action updates the note's `visited` property using Obsidian's `YYYY-MM-DD` date format. The row dims for the current sidebar session and disappears after refresh until its next cycle is due.
+Notes with a valid cycle and no `visited` date are due immediately. Clicking a row opens its URL, or its note if no URL is set, and updates the note's `visited` property using Obsidian's `YYYY-MM-DD` date format. The row dims for the current sidebar session and disappears after refresh until its next cycle is due.
 
 When upgrading from the shard-based version, Cycles copies existing visit dates from `cycle-data/notes/` into their notes once. It leaves the legacy folder untouched as a backup but no longer reads or writes it afterward.
 
@@ -23,7 +23,7 @@ The sidebar header can switch between due notes and all notes with a valid `cycl
 
 Recognized URLs display a small platform logo before the title, matching its text color. Supported platforms include Are.na, YouTube, Instagram, X/Twitter, Threads, Spotify, Bandcamp, SoundCloud, TikTok, Bluesky, Substack, Vimeo, Reddit, GitHub, Facebook, Twitch, and Pinterest. Logos from Simple Icons and the Are.na website are bundled locally; other websites keep a plain title.
 
-Right-click any row and choose **Delete** to use Obsidian's standard note deletion flow, including its configured confirmation, trash location, and unlinked attachment handling. Canceling the confirmation keeps the note. Rows visited during the current sidebar session also offer **Reset visit**.
+Right-click any row and choose **Open note** to open the underlying note directly. Choose **Delete** to use Obsidian's standard note deletion flow, including its configured confirmation, trash location, and unlinked attachment handling. Canceling the confirmation keeps the note. Rows visited during the current sidebar session also offer **Reset visit**.
 
 The **Extend cycle** submenu permanently adds 1 week, 2 weeks, 1 month, 2 months, or 3 months to the note's `cycle` property. For example, `1 month` plus a month becomes `2 months`, and `1 month` plus a week becomes `1 month 1 week`. Extensions simplify every 4 accumulated weeks (28 days) into 1 month: `2 months 2 weeks` plus `2 weeks` becomes `3 months`. The resulting months use calendar-month scheduling; existing properties are only simplified when extended. Mixed durations apply calendar months first, then days or weeks. The last-visited date stays unchanged. Extended rows stay in place with their updated cycle until you refresh the sidebar; refresh then applies the new due dates.
 

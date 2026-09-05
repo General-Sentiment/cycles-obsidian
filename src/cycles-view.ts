@@ -106,12 +106,36 @@ export class CyclesView extends ItemView {
 
     const list = container.createDiv({ cls: "cycles-list" });
     for (const note of notes) {
-      const item = list.createDiv({ cls: "cycles-item" });
+      const item: HTMLElement = list.createEl(note.url ? "a" : "div", {
+        cls: "cycles-item",
+        attr: note.url
+          ? { href: note.url, target: "_blank", rel: "noopener noreferrer", "aria-label": `Visit ${note.file.basename} URL` }
+          : { role: "button", tabindex: "0", "aria-label": `Open ${note.file.basename}` }
+      });
+      item.addEventListener("click", () => {
+        void this.markVisited(note.file.path, item);
+        if (!note.url) void this.app.workspace.getLeaf(false).openFile(note.file);
+      });
+      if (!note.url) {
+        item.addEventListener("keydown", (event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            item.click();
+          }
+        });
+      }
       if (this.visitedPaths.has(note.file.path)) item.addClass("is-visited");
       item.addEventListener("contextmenu", (event) => {
         event.preventDefault();
         event.stopPropagation();
         const menu = new Menu();
+        menu.addItem((menuItem) => {
+          menuItem.setTitle("Open note").setIcon("file-text").onClick(() => {
+            void this.markVisited(note.file.path, item);
+            void this.app.workspace.getLeaf(false).openFile(note.file);
+          });
+        });
+        menu.addSeparator();
         menu.addItem((menuItem) => {
           menuItem.setTitle("Extend cycle").setIcon("clock-plus");
           // Obsidian exposes this at runtime but omits it from its public types.
@@ -142,10 +166,7 @@ export class CyclesView extends ItemView {
         menu.showAtMouseEvent(event);
       });
       {
-        const thumbnail = item.createEl("button", {
-          cls: "cycles-thumbnail",
-          attr: { "aria-label": `Open ${note.file.basename}` }
-        });
+        const thumbnail = item.createDiv({ cls: "cycles-thumbnail", attr: { "aria-hidden": "true" } });
         if (note.imageSrc) {
           thumbnail.createEl("img", {
             attr: {
@@ -158,16 +179,9 @@ export class CyclesView extends ItemView {
           thumbnail.addClass("is-placeholder");
           setIcon(thumbnail, note.placeholderIcon);
         }
-        thumbnail.addEventListener("click", () => {
-          void this.markVisited(note.file.path, item);
-          void this.app.workspace.getLeaf(false).openFile(note.file);
-        });
       }
-      const noteButton = item.createEl("button", {
-        cls: "cycles-note-button",
-        attr: { "aria-label": `Open ${note.file.basename}` }
-      });
-      const title = noteButton.createDiv({ cls: "cycles-note-title" });
+      const noteContent = item.createDiv({ cls: "cycles-note-content" });
+      const title = noteContent.createDiv({ cls: "cycles-note-title" });
       const platform = this.plugin.settings.showPlatformIcons ? getPlatformIcon(note.url) : null;
       if (platform) {
         const icon = title.createSpan({
@@ -188,7 +202,7 @@ export class CyclesView extends ItemView {
         this.plugin.settings.showCycleDuration ||
         this.plugin.settings.showLastVisited
       ) {
-        const metadata = noteButton.createDiv({ cls: "cycles-note-meta" });
+        const metadata = noteContent.createDiv({ cls: "cycles-note-meta" });
         if (this.plugin.settings.showCycleDuration) {
           metadata.createSpan({ text: `Every ${note.cycle.label}` });
         }
@@ -198,26 +212,7 @@ export class CyclesView extends ItemView {
           });
         }
       }
-      noteButton.addEventListener("click", () => {
-        void this.markVisited(note.file.path, item);
-        void this.app.workspace.getLeaf(false).openFile(note.file);
-      });
 
-      if (note.url) {
-        const actions = item.createDiv({ cls: "cycles-actions" });
-        actions.createEl("a", {
-          cls: "cycles-open-button",
-          text: "Visit",
-          href: note.url,
-          attr: {
-            target: "_blank",
-            rel: "noopener noreferrer",
-            "aria-label": `Visit ${note.file.basename} URL`
-          }
-        }).addEventListener("click", () => {
-          void this.markVisited(note.file.path, item);
-        });
-      }
     }
   }
 
