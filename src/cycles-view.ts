@@ -187,9 +187,6 @@ export class CyclesView extends ItemView {
       const domain = this.plugin.settings.showWebsiteDomain ? formatWebsiteDomain(note.url) : null;
       if (this.plugin.settings.showCycleDuration || domain) {
         const metadata = noteContent.createDiv({ cls: "cycles-note-meta" });
-        if (this.plugin.settings.showCycleDuration) {
-          metadata.createSpan({ text: `Every ${note.cycle.label}` });
-        }
         if (domain) {
           const website = metadata.createDiv({ cls: "cycles-note-domain" });
           if (this.plugin.settings.showPlatformIcons) {
@@ -212,6 +209,9 @@ export class CyclesView extends ItemView {
             }
           }
           website.createSpan({ cls: "cycles-note-domain-text", text: domain });
+        }
+        if (this.plugin.settings.showCycleDuration) {
+          metadata.createSpan({ text: `Every ${note.cycle.label}` });
         }
       }
 
